@@ -1,32 +1,39 @@
-import matplotlib.pyplot as plt
+#coding: utf8
+import pandas as pd
+import numpy as np
 
+def sublist_uniques(data,sublist):
+    categories = set()
+    for d,t in data.iterrows():
+        try:
+            for j in t[sublist]:
+                categories.add(j)
+        except:
+            pass
+    return list(categories)
 
-def sample_batch(dataset):
-    batch = dataset.take(1).get_single_element()
-    if isinstance(batch, tuple):
-        batch = batch[0]
-    return batch.numpy()
-
-
-def display(
-    images, n=10, size=(20, 3), cmap="gray_r", as_type="float32", save_to=None
-):
-    """
-    Displays n random images from each one of the supplied arrays.
-    """
-    if images.max() > 1.0:
-        images = images / 255.0
-    elif images.min() < 0.0:
-        images = (images + 1.0) / 2.0
-
-    plt.figure(figsize=size)
-    for i in range(n):
-        _ = plt.subplot(1, n, i + 1)
-        plt.imshow(images[i].astype(as_type), cmap=cmap)
-        plt.axis("off")
-
-    if save_to:
-        plt.savefig(save_to)
-        print(f"\nSaved to {save_to}")
-
-    plt.show()
+def sublists_to_binaries(data,sublist,index_key = None):
+    categories = sublist_uniques(data,sublist)
+    frame = pd.DataFrame(columns=categories)
+    for d,i in data.iterrows():
+        if type(i[sublist]) == list or np.array:
+            try:
+                if index_key != None:
+                    key = i[index_key]
+                    f =np.zeros(len(categories))
+                    for j in i[sublist]:
+                        f[categories.index(j)] = 1
+                    if key in frame.index:
+                        for j in i[sublist]:
+                            frame.loc[key][j]+=1
+                    else:
+                        frame.loc[key]=f
+                else:
+                    f =np.zeros(len(categories))
+                    for j in i[sublist]:
+                        f[categories.index(j)] = 1
+                    frame.loc[d]=f
+            except:
+                pass
+                
+    return frame
